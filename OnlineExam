@@ -1,0 +1,147 @@
+OnlineQuizsystem class
+package OnlineExamination;
+import java.util.Scanner;
+public class OnlineQuizSystem {
+        public static void main(String[] args) {
+            Scanner scanner = new Scanner(System.in);
+            QuizSystem quizSystem = new QuizSystem();
+            quizSystem.addUser("user1", "1234"); // Adding a demo user
+    
+            System.out.print("Enter User ID: ");
+            String userId = scanner.nextLine();
+            System.out.print("Enter PIN: ");
+            String pin = scanner.nextLine();
+    
+            User currentUser = quizSystem.authenticateUser(userId, pin);
+            if (currentUser != null) {
+                System.out.println("Login successful!");
+                showMenu(scanner, currentUser, quizSystem);
+            } else {
+                System.out.println("Invalid credentials.");
+            }
+            scanner.close();
+        }
+    
+        private static void showMenu(Scanner scanner, User user, QuizSystem quizSystem) {
+            int choice;
+            do {
+                System.out.println("\nMenu:");
+                System.out.println("1. Update Profile and Password");
+                System.out.println("2. Take Quiz");
+                System.out.println("3. Logout");
+                System.out.print("Choose an option: ");
+                choice = scanner.nextInt();
+    
+                switch (choice) {
+                    case 1:
+                        updateProfile(scanner, user);
+                        break;
+                    case 2:
+                        quizSystem.startQuiz(user);
+                        break;
+                    case 3:
+                        System.out.println("Logging out...");
+                        break;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } while (choice != 3);
+        }
+    
+        private static void updateProfile(Scanner scanner, User user) {
+            System.out.print("Enter new password: ");
+            String newPassword = scanner.next();
+            user.setPassword(newPassword);
+            System.out.println("Password updated successfully!");
+        }
+    }
+
+QuizSystem class
+package OnlineExamination;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+public class QuizSystem {
+        private Map<String, User> users;
+    
+        public QuizSystem() {
+            users = new HashMap<>();
+        }
+    
+        public void addUser(String userId, String pin) {
+            users.put(userId, new User(userId, pin));
+        }
+    
+        public User authenticateUser(String userId, String pin) {
+            User user = users.get(userId);
+            if (user != null && user.getPin().equals(pin)) {
+                return user;
+            }
+            return null;
+        }
+    
+        public void startQuiz(User user) {
+            // For simplicity, using a static set of questions
+            String[] questions = {
+                "What is the capital of France?",
+                "What is 2 + 2?",
+                "Who wrote 'To Kill a Mockingbird'?"
+            };
+            String[][] options = {
+                {"1. Berlin", "2. Madrid", "3. Paris", "4. Rome"},
+                {"1. 3", "2. 4", "3. 5", "4. 6"},
+                {"1. Harper Lee", "2. J.K. Rowling", "3. Ernest Hemingway", "4. Mark Twain"}
+            };
+            int[] correctAnswers = {3, 2, 1};
+    
+            @SuppressWarnings("resource")
+            Scanner scanner = new Scanner(System.in);
+            int score = 0;
+            long startTime = System.currentTimeMillis();
+            long endTime = startTime + 60000; // 1 minute timer
+    
+            for (int i = 0; i < questions.length; i++) {
+                if (System.currentTimeMillis() > endTime) {
+                    System.out.println("Time's up! Auto-submitting your answers.");
+                    break;
+                }
+                System.out.println(questions[i]);
+                for (String option : options[i]) {
+                    System.out.println(option);
+                }
+                System.out.print("Enter your answer: ");
+                int answer = scanner.nextInt();
+                if (answer == correctAnswers[i]) {
+                    score++;
+                }
+            }
+    
+            System.out.println("Quiz completed! Your score is: " + score + "/" + questions.length);
+        }
+    }
+    
+User class
+package OnlineExamination;
+
+public class User {
+        @SuppressWarnings("unused")
+        private String userId;
+        private String pin;
+        @SuppressWarnings("unused")
+        private String password;
+    
+        public User(String userId, String pin) {
+            this.userId = userId;
+            this.pin = pin;
+            this.password = pin; // Initial password is the same as the pin
+        }
+    
+        public String getPin() {
+            return pin;
+        }
+    
+        public void setPassword(String newPassword) {
+            this.password = newPassword;
+        }
+    }
+    
